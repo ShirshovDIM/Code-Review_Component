@@ -53,8 +53,8 @@ def process_file(file_inst, dir_id, file_name) -> str:
     if not os.path.isdir(tmp_path):
         Path(tmp_path).mkdir(parents=True, exist_ok=True)
 
-    with open(f"{tmp_path}\\{file_name}", "w", encoding="utf-8") as file: 
-        file.write(str(file_inst))
+    with open(f"{tmp_path}\\{file_name}", "wb") as file: 
+        file.write(file_inst)
         
     project_files = glob(f"{tmp_path}\\**", recursive=True)
     faker_split = str(dir_id)
