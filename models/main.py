@@ -4,6 +4,7 @@ from glob import glob
 from decouple import config
 from telebot import TeleBot
 import os
+import shutil
 
 from assemble_pipeline import report_pipeline
 from pdf_converter import assemble_document
@@ -26,10 +27,14 @@ def process_archive(zip_file, dir):
         tmp_path = f"{os.getcwd()}\\data\\{dir}"
         archive.extractall(tmp_path)
         project_files = glob(f"{tmp_path}\\**", recursive=True)
-        report_dict = report_pipeline(project_files)
-
-    assemble_document(f"{tmp_path}\\report.pdf", report_dict)
-    return f"{tmp_path}\\report.pdf"
+        project_name = glob(f"{tmp_path}\\*")[0].split("\\")[-1]
+        print(project_name)
+        report_dict = report_pipeline(project_files, project_name)
+        shutil.rmtree(f"{tmp_path}\\{project_name}")
+    
+    file_dir = f"{tmp_path}\\{project_name}_report.pdf"
+    assemble_document(file_dir, report_dict)
+    return file_dir
 
 
 # Создание бота и обработка сообщений

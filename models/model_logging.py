@@ -46,7 +46,7 @@ def check_patterns_logger(project_files, return_json=False):
                     line_content = lines[line_number - 1].strip()
                     issues[key].append({
                         "Расположение файла в дереве проекта":file_path, 
-                        "Номер -> Строка": Template("```$line_num -> line_content```")\
+                        "Номер -> Строка": Template("```$line_num -> $line_content```")\
                         .substitute(line_num=str(line_number), line_content=line_content)
                         })
             
