@@ -1,11 +1,8 @@
 import os
 import re
-import sys
 
 
-project_path = 'c:\\Users\\dbezu\\Desktop\\tst\\FlaskApiEcommerce-master'
 class SQLAlchemyModelParser:
-    """Парсер SQLAlchemy моделей с использованием регулярных выражений"""
     
     def __init__(self, project_path: str):
         """
@@ -83,7 +80,7 @@ class SQLAlchemyModelParser:
                 'columns': columns
             })
 
-    def generate_ddl(self, output_path: str = 'ddl_queries.sql'):
+    def generate_ddl(self, output_path):
         """
         Генерация DDL-запросов для найденных моделей
         
@@ -95,7 +92,7 @@ class SQLAlchemyModelParser:
         """
         ddl_queries = []
         
-        # Преобразование типов SQLAlchemy в SQL-типы
+        # Преобразование типв SQLAlchemy в SQL-типы
         type_mapping = {
             'Integer': 'INTEGER',
             'String': 'VARCHAR(255)',
@@ -122,14 +119,16 @@ class SQLAlchemyModelParser:
                                  ",\n    ".join(columns) + "\n);"
             ddl_queries.append(create_table_query)
         
-        # Запись в файл
         ddl_content = "\n\n".join(ddl_queries)
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(ddl_content)
+
+        if output_path: 
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(ddl_content)
         
         return ddl_content
+    
 
-def main(project_path: str):
+def create_ddl(project_path: str):
     """
     Основная функция для парсинга и генерации DDL
     
@@ -138,22 +137,15 @@ def main(project_path: str):
     """
     parser = SQLAlchemyModelParser(project_path)
     
-    # Поиск и парсинг файлов
     for file_path in parser.find_python_files():
         parser.extract_model_info(file_path)
     
-    # Генерация DDL
     ddl_queries = parser.generate_ddl()
-    print(f"Найдено моделей: {len(parser.models_data)}")
-    print("DDL-запросы сгенерированы в ddl_queries.sql")
-        
-        # Запись в файл
-    # ddl_content = "\n\n".join(ddl_queries)
-    # with open(project_path, 'w', encoding='utf-8') as f:
-    #     f.write(ddl_content)
+    # print(f"Найдено моделей: {len(parser.models_data)}")
+    # print("DDL-запросы сгенерированы в ddl_queries.sql")
         
     return ddl_queries
 
 
-if __name__ == "__main__":
-    print(main(project_path))
+def give_ddl_feedback(ddl_queries): 
+    pass

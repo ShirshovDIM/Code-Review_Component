@@ -9,13 +9,6 @@ from application.assemble_pipeline import report_pipeline
 from application.pdf_converter import assemble_document
 
 
-# Функция для обработки файлов и создания репортов
-def process_file(file) -> str:
-    # Здесь должна быть логика обработки файла
-    print("Processing file:", file)
-    report = assemble_document("report.pdf", {"Respond":"Hello world"})
-    return report
-
 # Функция для обработки архивов
 def process_archive(zip_file, dir):
     with ZipFile(io.BytesIO(zip_file), 'r') as archive:
