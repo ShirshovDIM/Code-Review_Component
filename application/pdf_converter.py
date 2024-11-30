@@ -5,7 +5,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.colors import darkblue, navy
-import re
+import os
 
 
 class JSONtoPDFConverter:
@@ -25,7 +25,10 @@ class JSONtoPDFConverter:
         Args:
             output_path (str): Путь для сохранения PDF-файла
         """
-        pdfmetrics.registerFont(TTFont('DejaVuSerif', 'DejaVuSerif.ttf'))
+        pdfmetrics.registerFont(
+            TTFont(
+                'LiberationMono-Regular',
+                f'{os.path.dirname(os.path.abspath(__file__))}\\pdf_templates\\LiberationMono-Regular.ttf'))
 
         self.output_path = output_path
         self.styles = getSampleStyleSheet()
@@ -33,20 +36,20 @@ class JSONtoPDFConverter:
         style_names = ['Normal', 'Title', 'Heading1', 'Heading2', 'Heading3']
         for name in style_names:
             if name in self.styles:
-                self.styles[name].fontName = 'DejaVuSerif'
+                self.styles[name].fontName = 'LiberationMono-Regular'
         
-        # Создание пользовательского стиля для кода
-        self.code_style = ParagraphStyle(
+
+        self.styles.add(ParagraphStyle(
             'CodeStyle', 
             parent=self.styles['Normal'], 
-            fontName='DejaVuSerif', 
+            fontName='LiberationMono-Regular', 
             fontSize=9, 
             textColor=navy,
             backColor='lightgrey',
             borderColor=darkblue,
             borderWidth=0.5,
             borderPadding=6
-        )
+        ))
 
     def _parse_json_recursive(self, data, level=0):
         """
@@ -146,5 +149,3 @@ def main():
     
     converter = JSONtoPDFConverter('cyrillic_pdf_example.pdf')
     converter.convert(sample_json)
-
-example_usage()

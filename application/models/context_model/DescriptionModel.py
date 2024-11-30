@@ -11,7 +11,7 @@ class DescriptionModel:
         response = self.get_response((promt))
 
     def collect_project_context(self, file_contexts: List[Tuple[AnyStr, AnyStr]]):
-        promt = "Существует прокт в котором присутствуют следующие модули:\n\n"
+        promt = "Существует проект в котором присутствуют следующие модули:\n\n"
 
         for file_context in file_contexts:
             for f_name, f_context in file_context:
