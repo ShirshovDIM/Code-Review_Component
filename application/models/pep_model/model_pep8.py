@@ -8,18 +8,18 @@ class PEP8Checker:
         self.violations = []
 
     
-    def check_all_standards(self, file_path):
+    def check_all_standards(self, file_path, dummy_file_path):
 
         with open(file_path, 'r', encoding='utf-8') as file:
             self.source_code = file.read()
             self.lines = self.source_code.splitlines()
 
-        self.check_line_length(file_path)
-        self.check_imports(file_path)
-        self.check_whitespace(file_path)
-        self.check_naming_conventions(file_path)
-        self.check_comments(file_path)
-        self.check_complexity(file_path)
+        self.check_line_length(dummy_file_path)
+        self.check_imports(dummy_file_path)
+        self.check_whitespace(dummy_file_path)
+        self.check_naming_conventions(dummy_file_path)
+        self.check_comments(dummy_file_path)
+        # self.check_complexity(dummy_file_path)
         
         return self.violations
     
@@ -108,13 +108,17 @@ class PEP8Checker:
                                             f"```{node.name}```"})
 
 
-def check_patterns_pep(project_files): 
+def check_patterns_pep(project_files, project_name, faker_split): 
 
     parser = PEP8Checker()
 
     for file_path in project_files:
+        dummy_file_path = f"./path/to/{project_name}/{file_path.split(faker_split)[-1]
+                                                      .replace("\\\\", "/")
+                                                      .replace("\\", "/")}"
+
         if file_path.endswith('.py'):
-            parser.check_all_standards(file_path)
+            parser.check_all_standards(file_path, dummy_file_path)
 
     return parser.violations
 

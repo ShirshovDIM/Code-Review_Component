@@ -2,7 +2,7 @@ import re
 import json
 from string import Template
 
-def check_patterns_logger(project_files, return_json=False): 
+def check_patterns_logger(project_files, project_name, faker_split, return_json=False): 
     patterns = {
         'print_statements': re.compile(r'^\s*print\(', re.MULTILINE),
         'logging_imports': re.compile(r'^\s*import logging', re.MULTILINE),
@@ -24,6 +24,10 @@ def check_patterns_logger(project_files, return_json=False):
 
     for file_path in project_files:
         if file_path.endswith('.py'):
+            dummy_file_path = f"./path/to/{project_name}{file_path.split(faker_split)[-1]
+                                                          .replace("\\\\", "/")
+                                                          .replace("\\", "/")}"
+
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
 
@@ -31,7 +35,6 @@ def check_patterns_logger(project_files, return_json=False):
             line_starts = [0] + [m.end() for m in re.finditer(r'\n', content)]
             
             def get_line_number(pos):
-                """Calculate line number based on position in content."""
                 for i, start in enumerate(line_starts):
                     if start > pos:
                         return i
@@ -45,8 +48,8 @@ def check_patterns_logger(project_files, return_json=False):
                     line_number = get_line_number(match.start())
                     line_content = lines[line_number - 1].strip()
                     issues[key].append({
-                        "Расположение файла в дереве проекта":file_path, 
-                        "Номер -> Строка": Template("``` | $line_num -> ; $line_content ```")
+                        "Расположение файла в дереве проекта":dummy_file_path, 
+                        "Номер -> Строка": Template("``` | $line_num -> $line_content ```")
                         .substitute(line_num=str(line_number), line_content=line_content)
                         })
             
@@ -63,7 +66,7 @@ def check_patterns_logger(project_files, return_json=False):
                         break
 
                 target_key = 'global_loggers' if is_global else 'scoped_loggers'
-                issues[target_key].append((file_path, line_number, logger_name))
+                issues[target_key].append((dummy_file_path, line_number, logger_name))
 
     if return_json: 
         with open('logging_issues.json', 'w') as file:
