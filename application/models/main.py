@@ -5,7 +5,7 @@ from decouple import config
 from telebot import TeleBot
 import os
 
-from assemble_pipeline import report_pipeline
+from application.assemble_pipeline import report_pipeline
 from pdf_converter import assemble_document
 
 # Загрузка конфигурации из .env файла

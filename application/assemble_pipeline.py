@@ -1,4 +1,4 @@
-from model_logging import check_patterns_logger
+from application.models.model_logging import check_patterns_logger
 
 
 def get_summary_statistics():
