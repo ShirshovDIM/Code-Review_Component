@@ -1,7 +1,10 @@
 
 from string import Template
 from datetime import datetime
+
 from application.models.logging_model.model_logging import check_patterns_logger
+# from application.models.ddl_model.model_ddl_feedback import give_ddl_feedback
+from application.models.pep_model.model_pep8 import check_patterns_pep
 
 
 def count_issues(pipeline_dict): 
@@ -34,13 +37,18 @@ $summary_string""").substitute(
 
     return summary_analytics
 
+
 def report_pipeline(project_files, project_name):
 
     logger_report = check_patterns_logger(project_files)
+    pep_report = check_patterns_pep(project_files)
+    # ddl_feedback = give_ddl_feedback(project_files)
 
     pipeline_dict = {
-        # "Ошибки в архитектуре": 
-        "Ошибки логирования": logger_report
+        # "Ошибки в архитектуре": arch_report
+        "Ошибки логирования": logger_report, 
+        "Ошибки стандарта PEP":pep_report
+        # "Рекомендации для DDL сущностей в СУБД": ddl_feedback
     }
 
     return get_summary_statistics(pipeline_dict, project_name)
