@@ -1,38 +1,35 @@
 import io
 from zipfile import ZipFile
-
+from glob import glob
 from decouple import config
 from telebot import TeleBot
+import os
+
+from assemble_pipeline import report_pipeline
+from pdf_converter import assemble_document
 
 # Загрузка конфигурации из .env файла
 TOKEN = config('TELEGRAM_TOKEN')
-
-
-def create_report(report_path, contents):
-    # Для создания файла репорта, можно править для ваших потребностей
-    with open(report_path, "w") as file:
-        file.write(contents)
-    return report_path
 
 
 # Функция для обработки файлов и создания репортов
 def process_file(file) -> str:
     # Здесь должна быть логика обработки файла
     print("Processing file:", file)
-    report = create_report("report.txt", "Hello world")
+    report = assemble_document("report.pdf", {"Respond":"Hello world"})
     return report
 
 
 # Функция для обработки архивов
-def process_archive(zip_file):
+def process_archive(zip_file, dir):
     with ZipFile(io.BytesIO(zip_file), 'r') as archive:
-        for file in archive.namelist():
-            with archive.open(file) as nested_file:
-                file_contents = nested_file.readlines()
-                # Здесь должна быть логика обработки архива
+        tmp_path = f"{os.getcwd()}\\data\\{dir}"
+        archive.extractall(tmp_path)
+        project_files = glob(f"{tmp_path}\\**", recursive=True)
+        report_dict = report_pipeline(project_files)
 
-    report = create_report("report.txt", "Hello world")
-    return report
+    assemble_document(f"{tmp_path}\\report.pdf", report_dict)
+    return f"{tmp_path}\\report.pdf"
 
 
 # Создание бота и обработка сообщений
@@ -41,11 +38,13 @@ bot = TeleBot(TOKEN)
 
 @bot.message_handler(content_types=['document'])
 def handle_document(message):
+    chat_id = message.chat.id
     file_info = bot.get_file(message.document.file_id)
     downloaded_file = bot.download_file(file_info.file_path)
 
     if message.document.file_name.endswith('.zip'):
-        result_report = process_archive(downloaded_file)
+        result_report = process_archive(downloaded_file, chat_id)
+        print(result_report)
         r_type = "архив"
     else:
         result_report = process_file(downloaded_file)
