@@ -1,10 +1,11 @@
-
 from string import Template
 from datetime import datetime
 
 from application.models.logging_model.model_logging import check_patterns_logger
-# from application.models.ddl_model.model_ddl_feedback import give_ddl_feedback
+from application.models.ddl_model.model_ddl_feedback import give_ddl_feedback
 from application.models.pep_model.model_pep8 import check_patterns_pep
+from application.models.hierarchy_model.hierarchy_model import check_hierarchy
+from application.models.context_model.adapter_qa_model import adapter_qa_checks
 
 
 def count_leaf_elements(data):
@@ -56,10 +57,17 @@ def archive_report_pipeline(project_files, project_name, faker_split):
 
     logger_report = check_patterns_logger(project_files, project_name, faker_split)
     pep_report = check_patterns_pep(project_files, project_name, faker_split)
-    # ddl_feedback = give_ddl_feedback(project_files)
+    arch_report = check_hierarchy(project_files)
+    adapter_qa_report = adapter_qa_checks(project_files)
+    # try:
+    #     ddl_feedback = give_ddl_feedback(project_files)
+    
+    # except KeyError:
+        # ddl_feedback = []
 
     pipeline_dict = {
-        # "Ошибки в архитектуре": arch_report
+        "Ошибки в архитектуре": arch_report,
+        "Описание архитектуры на предмет наличия паттерна адаптера": adapter_qa_report,
         "Ошибки логирования": logger_report, 
         "Ошибки стандарта PEP":pep_report
         # "Рекомендации для DDL сущностей в СУБД": ddl_feedback
@@ -73,9 +81,16 @@ def file_report_pipeline(project_files, project_name, faker_split):
     logger_report = check_patterns_logger(project_files, project_name, faker_split)
     pep_report = check_patterns_pep(project_files, project_name, faker_split)
 
+    # try:
+    #     ddl_feedback = give_ddl_feedback(project_files)
+    
+    # except KeyError:
+        # ddl_feedback = []
+
     pipeline_dict = {
         "Ошибки логирования": logger_report, 
-        "Ошибки стандарта PEP":pep_report
+        "Ошибки стандарта PEP": pep_report
+        # "Рекомендации для DDL сущностей в СУБД": ddl_feedback
     }
 
     return get_summary_statistics(pipeline_dict, project_name)

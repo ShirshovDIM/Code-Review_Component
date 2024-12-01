@@ -9,7 +9,7 @@ def format_python_script(file_path: str, verbose: bool = True):
     """Форматирует Python файл с помощью YAPF."""
     with open(file_path, 'r', encoding='utf-8') as f:
         original_code = f.read()
-    formatted_code, _ = FormatCode(original_code)
+    formatted_code, _ = FormatCode(original_code, )
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(formatted_code)
     if verbose:

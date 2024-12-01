@@ -1,17 +1,14 @@
 import os
 import re
 
+from string import Template
+
+from application.models.ddl_model.model_embedded import get_evrazgpt_response
+
 
 class SQLAlchemyModelParser:
     
-    def __init__(self, project_path: str):
-        """
-        Инициализация парсера моделей
-        
-        Args:
-            project_path (str): Корневой путь проекта
-        """
-        self.project_path = project_path
+    def __init__(self):
         self.models_data = []
         
         # Регулярные выражения для извлечения информации о моделях
@@ -22,29 +19,7 @@ class SQLAlchemyModelParser:
             'column_type': r'[A-Za-z]+\.(Integer|String|DateTime|Boolean|Float|Text)'
         }
 
-    def find_python_files(self) -> list:
-        """
-        Поиск Python-файлов в проекте
-        
-        Returns:
-            list: Пути к найденным файлам
-        """
-        py_files = []
-        for root, _, files in os.walk(self.project_path):
-            py_files.extend([
-                os.path.join(root, file) 
-                for file in files 
-                if file.endswith('.py')
-            ])
-        return py_files
-
-    def extract_model_info(self, file_path: str):
-        """
-        Извлечение информации о моделях из файла
-        
-        Args:
-            file_path (str): Путь к файлу
-        """
+    def extract_model_info(self, file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
@@ -80,16 +55,7 @@ class SQLAlchemyModelParser:
                 'columns': columns
             })
 
-    def generate_ddl(self, output_path):
-        """
-        Генерация DDL-запросов для найденных моделей
-        
-        Args:
-            output_path (str): Путь для сохранения SQL-файла
-        
-        Returns:
-            str: Сгенерированные DDL-запросы
-        """
+    def generate_ddl(self):
         ddl_queries = []
         
         # Преобразование типв SQLAlchemy в SQL-типы
@@ -119,33 +85,51 @@ class SQLAlchemyModelParser:
                                  ",\n    ".join(columns) + "\n);"
             ddl_queries.append(create_table_query)
         
-        ddl_content = "\n\n".join(ddl_queries)
 
-        if output_path: 
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(ddl_content)
+
+        # if output_path: 
+        #     ddl_content = "\n\n".join(ddl_queries)
+        #     with open(output_path, 'w', encoding='utf-8') as f:
+        #         f.write(ddl_content)
         
-        return ddl_content
+        return ddl_queries
     
 
-def create_ddl(project_path: str):
-    """
-    Основная функция для парсинга и генерации DDL
+def create_ddl(project_paths):
+    parser = SQLAlchemyModelParser()
     
-    Args:
-        project_path (str): Корневой путь проекта
-    """
-    parser = SQLAlchemyModelParser(project_path)
-    
-    for file_path in parser.find_python_files():
-        parser.extract_model_info(file_path)
+    for file_path in project_paths:
+        if file_path.endswith(".py"): 
+            parser.extract_model_info(file_path)
     
     ddl_queries = parser.generate_ddl()
-    # print(f"Найдено моделей: {len(parser.models_data)}")
-    # print("DDL-запросы сгенерированы в ddl_queries.sql")
         
     return ddl_queries
 
 
-def give_ddl_feedback(ddl_queries): 
-    pass
+def give_ddl_feedback(project_path): 
+    ddl_queries = create_ddl(project_path)
+
+    ddl_feedback = []
+    query_prompt = Template("""
+    convert the SQL DDL (data definition language) below in the set of sqlalchemy objects in Python:                            
+    $ddl_query
+    """)
+    
+    context = """
+    assume that you are proficient Python coder. 
+    You have string expertise in SQLAlchemy python library. 
+    You can only code. Do not explain anything
+
+    Yor task is also optimize these ddl queries as much as possible.
+    To do so consider using more efficient data types, creating indicies on tables, 
+    make partitioning for those tables, whos name can be related to heavliy loaded in terms of transactions.
+
+    In your answeres use ` symbols to separate your comments from code 
+    """
+
+    for ddl_query in ddl_queries: 
+        prompt = query_prompt.substitute(ddl_query=ddl_query)
+        ddl_feedback.append(get_evrazgpt_response(prompt, context))
+
+    return ddl_feedback

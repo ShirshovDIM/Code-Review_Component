@@ -113,7 +113,7 @@ def check_patterns_pep(project_files, project_name, faker_split):
     parser = PEP8Checker()
 
     for file_path in project_files:
-        dummy_file_path = f"./path/to/{project_name}/{file_path.split(faker_split)[-1]
+        dummy_file_path = f"./path/to/{project_name}{file_path.split(faker_split)[-1]
                                                       .replace("\\\\", "/")
                                                       .replace("\\", "/")}"
 
